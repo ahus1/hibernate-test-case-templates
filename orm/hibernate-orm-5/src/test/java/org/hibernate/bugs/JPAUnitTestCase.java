@@ -4,9 +4,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import org.hibernate.bugs.cl.Child;
+import org.hibernate.bugs.cl.Parent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using the Java Persistence API.
@@ -31,7 +34,13 @@ public class JPAUnitTestCase {
 	public void hhh123Test() throws Exception {
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
-		// Do stuff...
+
+		Parent myParent = new Parent();
+		entityManager.persist(myParent);
+		myParent.addChild(new Child());
+		entityManager.remove(myParent);
+		entityManager.flush();
+
 		entityManager.getTransaction().commit();
 		entityManager.close();
 	}

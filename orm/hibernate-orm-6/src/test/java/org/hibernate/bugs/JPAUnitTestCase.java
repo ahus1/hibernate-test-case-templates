@@ -4,6 +4,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
+import org.hibernate.bugs.cl.Child;
+import org.hibernate.bugs.cl.Parent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +33,24 @@ public class JPAUnitTestCase {
 	public void hhh123Test() throws Exception {
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
-		// Do stuff...
+
+		Parent myParent = new Parent();
+
+		entityManager.merge(myParent);
+
+		Child child = entityManager.merge(new Child());
+
+		myParent.addChild(child);
+
+		entityManager.flush();
+		entityManager.clear();
+
+		myParent = entityManager.find(Parent.class, myParent.getId());
+
+		// entityManager.remove(myParent);
+
 		entityManager.getTransaction().commit();
+
 		entityManager.close();
 	}
 }
