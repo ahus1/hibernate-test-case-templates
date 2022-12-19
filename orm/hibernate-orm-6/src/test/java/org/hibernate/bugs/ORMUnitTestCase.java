@@ -17,10 +17,17 @@ package org.hibernate.bugs;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.bugs.cl.Child;
+import org.hibernate.bugs.cl.Parent;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using its built-in unit test framework.
@@ -37,8 +44,8 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 	@Override
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
-//				Foo.class,
-//				Bar.class
+				Parent.class,
+				Child.class
 		};
 	}
 
@@ -68,11 +75,56 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 
 	// Add your tests, using standard JUnit.
 	@Test
-	public void hhh123Test() throws Exception {
-		// BaseCoreFunctionalTestCase automatically creates the SessionFactory and provides the Session.
+	public void hhh15230Test() throws Exception {
+		// BaseCoreFunctionalTestCase automatically creates the SessionFactory and provides the S.
 		Session s = openSession();
 		Transaction tx = s.beginTransaction();
-		// Do stuff...
+
+		// given...
+		s.persist(new Parent());
+		s.flush();
+
+		List<Parent> results = s.createQuery("from parent", Parent.class).list();
+		assertEquals(1, results.size());
+		results = s.createQuery("from parent", Parent.class).list();
+		assertEquals(1, results.size());
+		Parent parent = (Parent) results.get(0);
+		assertEquals(0, parent.getChildren().size());
+
+		// when...
+		// ... "Child 1" added
+		Child c1 = new Child();
+		c1.setParent(parent);
+		c1.setName("Child 1");
+		s.persist(c1);
+		parent.getChildren().add(c1);
+
+		// ... executing a query queues the entry into s.actionQueue.inserts,
+		// but as auto-flush sees that parent is queried and not children, it doesn't flush them
+		s.createQuery("from parent", Parent.class).list();
+
+		// ... test will only be green with an explicit flush here
+		// s.flush();
+
+		// ... "Child 1" removed, expecting it to be orphan-removed from the database
+		parent.getChildren().remove(c1);
+
+		// ... "Child 2" added
+		Child c2 = new Child();
+		c2.setName("Child 2");
+		c2.setParent(parent);
+		s.persist(c2);
+		parent.getChildren().add(c2);
+
+		s.flush();
+		s.clear();
+
+		Parent parent2 = s.get(Parent.class, parent.getId());
+		assertTrue(parent2.getChildren().stream().anyMatch(child -> child.getName().equals("Child 2")));
+		// if there are 2 elements, the orphan removal didn't work as expected
+		assertEquals(1, parent2.getChildren().size());
+
+
 		tx.commit();
 		s.close();
 	}
