@@ -4,7 +4,17 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.bugs.cl.Parent;
+import org.hibernate.query.spi.QueryImplementor;
+import org.hibernate.query.sqm.internal.QuerySqmImpl;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,6 +22,8 @@ import org.junit.Test;
  * This template demonstrates how to develop a test case for Hibernate ORM, using the Java Persistence API.
  */
 public class JPAUnitTestCase {
+
+	private final static Logger LOGGER = LogManager.getLogger(JPAUnitTestCase.class);
 
 	private EntityManagerFactory entityManagerFactory;
 
@@ -31,7 +43,32 @@ public class JPAUnitTestCase {
 	public void hhh123Test() throws Exception {
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
-		// Do stuff...
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Parent> cq = cb.createQuery(Parent.class);
+		Root<Parent> root = cq.from(Parent.class);
+		cq.select(root).where(cb.equal(root.get("name"), "main"));
+
+		TypedQuery<Parent> typedQuery = entityManager.createQuery(cq);
+
+		QueryImplementor<?> query = typedQuery.unwrap(QueryImplementor.class);
+
+		// Fails on H6. Instead, it's only "<criteria>"
+		Assert.assertEquals("select generatedAlias0 from parent as generatedAlias0 where generatedAlias0.name=:param0", query.getQueryString());
+		// Assert.assertEquals("<criteria>", query.getQueryString());
+
+		// will contain dynamic aliases which are always different, so this string can't be used for caching:
+		// select alias_1099892020 from org.hibernate.bugs.cl.Parent alias_1099892020 where alias_1099892020.name = main
+		LOGGER.info("HSQL: " + ((QuerySqmImpl<?>) query).getSqmStatement().toHqlString());
+
+		// THEREFORE: SQL is not usable as a key for caching
+
+		query.getParameters().forEach(parameter -> {
+			// Succeed on H5, fails on H6 as the parameter name is null - how's that?
+			// The parameter is already replaced in the HSQL, so no harm done here to ignore those without a name?
+			Assert.assertNotNull(parameter.getName());
+		});
+
 		entityManager.getTransaction().commit();
 		entityManager.close();
 	}
