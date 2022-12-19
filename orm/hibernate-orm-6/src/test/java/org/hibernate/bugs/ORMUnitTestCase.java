@@ -15,12 +15,20 @@
  */
 package org.hibernate.bugs;
 
+import jakarta.persistence.LockModeType;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.bugs.cl.Child;
+import org.hibernate.bugs.cl.Parent;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
+import org.hibernate.testing.bytecode.enhancement.BytecodeEnhancerRunner;
 import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.List;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using its built-in unit test framework.
@@ -31,12 +39,16 @@ import org.junit.Test;
  * What's even better?  Fork hibernate-orm itself, add your test case directly to a module's unit tests, then
  * submit it as a PR!
  */
+
+@RunWith(BytecodeEnhancerRunner.class)
 public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 
 	// Add your entities here.
 	@Override
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
+				Parent.class,
+				Child.class,
 //				Foo.class,
 //				Bar.class
 		};
@@ -63,6 +75,7 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 
 		configuration.setProperty( AvailableSettings.SHOW_SQL, Boolean.TRUE.toString() );
 		configuration.setProperty( AvailableSettings.FORMAT_SQL, Boolean.TRUE.toString() );
+		configuration.setProperty( AvailableSettings.ORDER_UPDATES, Boolean.TRUE.toString() );
 		//configuration.setProperty( AvailableSettings.GENERATE_STATISTICS, "true" );
 	}
 
@@ -70,10 +83,44 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 	@Test
 	public void hhh123Test() throws Exception {
 		// BaseCoreFunctionalTestCase automatically creates the SessionFactory and provides the Session.
-		Session s = openSession();
-		Transaction tx = s.beginTransaction();
-		// Do stuff...
-		tx.commit();
-		s.close();
+
+		{
+			Session s = openSession();
+			Transaction tx = s.beginTransaction();
+
+			Parent parent1 = new Parent();
+			parent1 = s.merge(parent1);
+
+			s.flush();
+
+			// create two children with the same name, so that they differ only in their parent
+			// otherwise the key doesn't trigger the exception
+			Child child1 = new Child();
+			child1.setName("name1");
+			child1.setValue("value");
+			parent1.addChild(child1);
+			child1 = s.merge(child1);
+
+			s.flush();
+			s.clear();
+
+			// The following fail with a NPE
+			// List<Child> children = s.createQuery("select Child", Child.class).getResultList();
+			// List<Child> children = s.createQuery("select Child from Child", Child.class).getResultList();
+			// List<Child> children = s.createQuery("select Child from Child where 1=1", Child.class).getResultList();
+
+			Query<Child> query = s.createQuery("select c from Child c where c.parent = :parent", Child.class);
+			query.setParameter("parent", s.getReference(Parent.class, parent1.getId()));
+			query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+			List<Child> children = query.getResultList();
+			if (children.get(0).getParent() == null) {
+				throw new NullPointerException();
+			}
+
+			tx.commit();
+			s.close();
+
+		}
+
 	}
 }
