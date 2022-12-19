@@ -16,11 +16,18 @@
 package org.hibernate.bugs;
 
 import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.hibernate.bugs.cl.MyEntity;
+import org.hibernate.bugs.cl.MyOtherEntity;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.testing.bytecode.enhancement.BytecodeEnhancerRunner;
 import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using its built-in unit test framework.
@@ -31,14 +38,15 @@ import org.junit.Test;
  * What's even better?  Fork hibernate-orm itself, add your test case directly to a module's unit tests, then
  * submit it as a PR!
  */
+@RunWith(BytecodeEnhancerRunner.class)
 public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 
 	// Add your entities here.
 	@Override
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
-//				Foo.class,
-//				Bar.class
+				MyEntity.class,
+				MyOtherEntity.class
 		};
 	}
 
@@ -68,12 +76,53 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 
 	// Add your tests, using standard JUnit.
 	@Test
-	public void hhh123Test() throws Exception {
+	public void hhh123Test() {
 		// BaseCoreFunctionalTestCase automatically creates the SessionFactory and provides the Session.
-		Session s = openSession();
-		Transaction tx = s.beginTransaction();
-		// Do stuff...
-		tx.commit();
-		s.close();
+		Long id;
+
+		{
+			Session s = openSession();
+			s.getTransaction().begin();
+
+			MyEntity myEntity = new MyEntity();
+			myEntity.getRedirectUris().add("1");
+			myEntity = s.merge(myEntity);
+			id = myEntity.getId();
+			s.getTransaction().commit();
+			s.close();
+		}
+		{
+			Session s = openSession();
+			s.getTransaction().begin();
+
+			MyEntity myEntity = s.find(MyEntity.class, id);
+
+			Set<String> set = new HashSet<>();
+			set.add("2");
+			myEntity.setRedirectUris(set);
+
+			log.info("running select for other entity, causing a auto-flush check, but no flush");
+			s.createQuery("from MyOtherEntity ", MyOtherEntity.class).getResultList();
+
+			log.info("Now the CollectionEntry was initialized with ignore=true, which will prevent ");
+
+			s.getTransaction().commit();
+			s.close();
+		}
+
+		{
+			Session s = openSession();
+			s.getTransaction().begin();
+
+			MyEntity myEntity = s.find(MyEntity.class, id);
+
+			// as the delete wasn't triggered, this will fail with 2 entries
+			// but only for BytecodeEnhancerRunner
+			Assert.assertEquals(1, myEntity.getRedirectUris().size());
+
+			s.getTransaction().commit();
+			s.close();
+		}
+
 	}
 }
