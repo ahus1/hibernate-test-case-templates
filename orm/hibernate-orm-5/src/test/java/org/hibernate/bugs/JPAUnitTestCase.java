@@ -4,9 +4,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import org.assertj.core.api.Assertions;
+import org.hibernate.bugs.cl.Parent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.HashMap;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using the Java Persistence API.
@@ -31,7 +35,26 @@ public class JPAUnitTestCase {
 	public void hhh123Test() throws Exception {
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
-		// Do stuff...
+
+		// create an entity in the database
+		Parent entity = new Parent();
+		entity.setData(new HashMap<>());
+		entityManager.persist(entity);
+		entityManager.flush();
+		Long id = entity.getId();
+		entityManager.clear();
+
+		// re-read from the database
+		entity = entityManager.find(Parent.class, id);
+
+		entity.getData().put("key", "value");
+
+		// re-read from the database, and see if the data has been written
+		entityManager.flush();
+		entityManager.clear();
+		entity = entityManager.find(Parent.class, id);
+		Assertions.assertThat(entity.getData()).hasSize(1);
+
 		entityManager.getTransaction().commit();
 		entityManager.close();
 	}
