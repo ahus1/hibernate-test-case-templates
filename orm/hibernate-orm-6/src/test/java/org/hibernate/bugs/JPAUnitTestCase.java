@@ -47,6 +47,7 @@ public class JPAUnitTestCase {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Parent> cq = cb.createQuery(Parent.class);
 		Root<Parent> root = cq.from(Parent.class);
+		root.alias("generatedAlias0");
 		cq.select(root).where(cb.equal(root.get("name"), "main"));
 
 		TypedQuery<Parent> typedQuery = entityManager.createQuery(cq);
@@ -54,12 +55,11 @@ public class JPAUnitTestCase {
 		QueryImplementor<?> query = typedQuery.unwrap(QueryImplementor.class);
 
 		// Fails on H6. Instead, it's only "<criteria>"
-		Assert.assertEquals("select generatedAlias0 from parent as generatedAlias0 where generatedAlias0.name=:param0", query.getQueryString());
-		// Assert.assertEquals("<criteria>", query.getQueryString());
+		// Assert.assertEquals("select generatedAlias0 from parent as generatedAlias0 where generatedAlias0.name=:param0", query.getQueryString());
 
-		// will contain dynamic aliases which are always different, so this string can't be used for caching:
-		// select alias_1099892020 from org.hibernate.bugs.cl.Parent alias_1099892020 where alias_1099892020.name = main
-		LOGGER.info("HSQL: " + ((QuerySqmImpl<?>) query).getSqmStatement().toHqlString());
+		// will contain a dynamic alias unless set with an alias above
+		Assert.assertEquals("select generatedAlias0 as generatedAlias0 from org.hibernate.bugs.cl.Parent generatedAlias0 where generatedAlias0.name = main",
+				((QuerySqmImpl<?>) query).getSqmStatement().toHqlString());
 
 		// THEREFORE: SQL is not usable as a key for caching
 
