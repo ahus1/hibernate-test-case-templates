@@ -5,6 +5,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import org.hibernate.annotations.Mutability;
+import org.hibernate.type.descriptor.java.MutabilityPlan;
+
 import java.util.Map;
 
 /**
@@ -27,6 +30,9 @@ public class Parent {
     }
 
     @Convert(converter = MapStringConverter.class)
+    // FIX START
+    // @Mutability(MapStringConverter.MapStringConverterMutabilityPlan.class)
+    // FIX END
     public Map<String, String> getData() {
         return data;
     }

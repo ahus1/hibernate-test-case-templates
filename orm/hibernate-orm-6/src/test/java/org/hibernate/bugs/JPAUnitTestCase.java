@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
-import jakarta.persistence.Query;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
@@ -14,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using the Java Persistence API.
@@ -53,9 +51,8 @@ public class JPAUnitTestCase {
 		// re-read from the database, and make a change that should trigger a writing to the DB due to dirty checking
 		entity = entityManager.find(Parent.class, id);
 
-		// dirty checking in H6 requires all converted attributes to be immutable - THIS TEST WILL FAIL
-
-		// therefore: cloning the attribute value
+		// dirty checking in H6 assumes all converted attributes to be immutable by default - THIS TEST WILL FAIL
+		// therefore: cloning the attribute value - or add a MutabilityPlan to the property (see Parent class)
 		// FIX START
 		// entity.setData(new HashMap<>(entity.getData()));
 		// FIX END
