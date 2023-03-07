@@ -4,9 +4,14 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
+import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
+import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
+import org.hibernate.jpa.boot.spi.Bootstrap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collections;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using the Java Persistence API.
@@ -17,7 +22,10 @@ public class JPAUnitTestCase {
 
 	@Before
 	public void init() {
-		entityManagerFactory = Persistence.createEntityManagerFactory( "templatePU" );
+		ParsedPersistenceXmlDescriptor descriptor = PersistenceXmlParser.locateIndividualPersistenceUnit(
+				JPAUnitTestCase.class.getClassLoader()
+						.getResource("META-INF/my-persistence.xml"));
+		entityManagerFactory = Bootstrap.getEntityManagerFactoryBuilder(descriptor, Collections.emptyMap()).build();
 	}
 
 	@After
