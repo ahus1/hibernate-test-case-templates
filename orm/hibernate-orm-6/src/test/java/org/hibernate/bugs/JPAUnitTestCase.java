@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using the Java Persistence API.
  */
-@RunWith(BytecodeEnhancerRunner.class)
 public class JPAUnitTestCase {
 
 	private EntityManagerFactory entityManagerFactory;
@@ -35,38 +34,6 @@ public class JPAUnitTestCase {
 	// Add your tests, using standard JUnit.
 	@Test
 	public void hhh123Test() throws Exception {
-		Long id;
 
-		{
-			EntityManager entityManager = entityManagerFactory.createEntityManager();
-			entityManager.getTransaction().begin();
-
-			Parent myParent = new Parent();
-			myParent = entityManager.merge(myParent);
-			Child child = entityManager.merge(new Child());
-			myParent.addChild(child);
-			id = myParent.getId();
-			entityManager.flush();
-			entityManager.clear();
-			entityManager.getTransaction().commit();
-			entityManager.close();
-		}
-		{
-
-			EntityManager entityManager = entityManagerFactory.createEntityManager();
-			entityManager.getTransaction().begin();
-
-			// myParent = entityManager.find(Parent.class, myParent.getId());
-
-			Parent myParent = entityManager.find(Parent.class, id, LockModeType.WRITE);
-			entityManager.refresh(myParent);
-			myParent.getChildren().size();
-
-			myParent = entityManager.find(Parent.class, id, LockModeType.WRITE);
-			entityManager.refresh(myParent);
-			myParent.getChildren().size();
-
-			entityManager.close();
-		}
 	}
 }

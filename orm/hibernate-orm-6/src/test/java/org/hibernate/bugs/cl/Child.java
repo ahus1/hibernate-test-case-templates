@@ -15,17 +15,17 @@ import jakarta.persistence.Table;
 @Table(name = "child")
 public class Child {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
     public Parent getParent() {
         return parent;
     }
 
+    @ManyToOne(fetch = FetchType.LAZY)
     private Parent parent;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     public Long getId() {
         return this.id;
     }

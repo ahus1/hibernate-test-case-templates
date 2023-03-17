@@ -1,11 +1,15 @@
 package org.hibernate.bugs.cl;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -13,6 +17,7 @@ import org.hibernate.annotations.Type;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static jakarta.persistence.CascadeType.PERSIST;
 import static jakarta.persistence.CascadeType.REMOVE;
@@ -23,13 +28,20 @@ import static jakarta.persistence.CascadeType.REMOVE;
 @Entity(name = "parent")
 @Table(name = "parent")
 public class Parent {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Version
     private Long version;
 
-    @OneToMany(mappedBy = "parent", cascade = { REMOVE }, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "parent", cascade = { REMOVE }, orphanRemoval = false, fetch = FetchType.LAZY)
     private List<Child> children = new ArrayList<>();
+
+    @ElementCollection
+    @Column(name="VALUE")
+    @CollectionTable(name="REALM_EVENTS_LISTENERS", joinColumns={ @JoinColumn(name="REALM_ID") })
+    protected Set<String> eventsListeners;
 
     public List<Child> getChildren() {
         return children;
@@ -39,8 +51,6 @@ public class Parent {
         this.children = children;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     public Long getId() {
         return this.id;
     }

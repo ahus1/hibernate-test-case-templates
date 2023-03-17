@@ -15,12 +15,20 @@
  */
 package org.hibernate.bugs;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.bugs.cl.Child;
+import org.hibernate.bugs.cl.Parent;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.collection.spi.PersistentBag;
+import org.hibernate.testing.bytecode.enhancement.BytecodeEnhancerRunner;
 import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using its built-in unit test framework.
@@ -31,12 +39,16 @@ import org.junit.Test;
  * What's even better?  Fork hibernate-orm itself, add your test case directly to a module's unit tests, then
  * submit it as a PR!
  */
+
+@RunWith(BytecodeEnhancerRunner.class)
 public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 
 	// Add your entities here.
 	@Override
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
+				Parent.class,
+				Child.class
 //				Foo.class,
 //				Bar.class
 		};
@@ -70,10 +82,39 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 	@Test
 	public void hhh123Test() throws Exception {
 		// BaseCoreFunctionalTestCase automatically creates the SessionFactory and provides the Session.
-		Session s = openSession();
-		Transaction tx = s.beginTransaction();
-		// Do stuff...
-		tx.commit();
-		s.close();
+
+		Long id;
+
+		{
+			Session s = openSession();
+			Transaction tx = s.beginTransaction();
+
+			Parent myParent = new Parent();
+			myParent = s.merge(myParent);
+			Child child = s.merge(new Child());
+			myParent.addChild(child);
+			id = myParent.getId();
+
+			s.flush();
+			s.clear();
+
+			myParent = s.find(Parent.class, myParent.getId());
+
+			myParent = s.find(Parent.class, id, LockModeType.WRITE);
+
+			Assert.assertNotNull(((PersistentBag<Child>) myParent.getChildren()).getSession());
+
+			s.refresh(myParent);
+
+			myParent.getChildren().size();
+
+			myParent = s.find(Parent.class, id, LockModeType.WRITE);
+			s.refresh(myParent);
+			myParent.getChildren().size();
+
+			tx.commit();
+			s.close();
+		}
+
 	}
 }
