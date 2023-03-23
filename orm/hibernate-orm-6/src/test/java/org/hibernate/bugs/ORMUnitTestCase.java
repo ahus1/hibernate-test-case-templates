@@ -15,11 +15,11 @@
  */
 package org.hibernate.bugs;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.bugs.cl.Child;
+import org.hibernate.bugs.cl.MyOtherEntity;
 import org.hibernate.bugs.cl.Parent;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
@@ -48,7 +48,8 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
 				Parent.class,
-				Child.class
+				Child.class,
+				MyOtherEntity.class
 //				Foo.class,
 //				Bar.class
 		};
@@ -95,12 +96,23 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 			myParent.addChild(child);
 			id = myParent.getId();
 
-			s.flush();
-			s.clear();
+			tx.commit();
+			s.close();
 
-			myParent = s.find(Parent.class, myParent.getId());
+		}
 
-			myParent = s.find(Parent.class, id, LockModeType.WRITE);
+		{
+			Session s = openSession();
+			Transaction tx = s.beginTransaction();
+
+			Parent myParent = s.find(Parent.class, id);
+
+			myParent.getChildren().size();
+
+			Assert.assertNotNull(((PersistentBag<Child>) myParent.getChildren()).getSession());
+
+			log.info("running select for other entity, causing a auto-flush check, but no flush");
+			s.createQuery("from MyOtherEntity ", MyOtherEntity.class).getResultList();
 
 			Assert.assertNotNull(((PersistentBag<Child>) myParent.getChildren()).getSession());
 

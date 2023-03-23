@@ -1,6 +1,5 @@
 package org.hibernate.bugs.cl;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -13,13 +12,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import org.hibernate.annotations.Type;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static jakarta.persistence.CascadeType.PERSIST;
 import static jakarta.persistence.CascadeType.REMOVE;
 
 /**
@@ -39,8 +36,8 @@ public class Parent {
     private List<Child> children = new ArrayList<>();
 
     @ElementCollection
-    @Column(name="VALUE")
-    @CollectionTable(name="REALM_EVENTS_LISTENERS", joinColumns={ @JoinColumn(name="REALM_ID") })
+    @Column(name="LISTENER")
+    @CollectionTable(name="REALM_EVENTS_LISTENERS", joinColumns={ @JoinColumn(name="ID") })
     protected Set<String> eventsListeners;
 
     public List<Child> getChildren() {
