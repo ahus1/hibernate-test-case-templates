@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
  * @author Alexander Schwartz
  */
 @Entity
-public class Child {
+public class LazyChild {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,8 +40,8 @@ public class Child {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Child )) return false;
-        return id != null && id.equals(((Child) o).getId());
+        if (!(o instanceof LazyChild)) return false;
+        return id != null && id.equals(((LazyChild) o).getId());
     }
 
     @Override

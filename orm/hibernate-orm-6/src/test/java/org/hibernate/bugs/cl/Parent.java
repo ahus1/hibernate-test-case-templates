@@ -14,6 +14,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -23,22 +25,29 @@ import static jakarta.persistence.CascadeType.REMOVE;
  * @author Alexander Schwartz
  */
 @Entity(name = "parent")
-@Table(name = "parent")
 public class Parent {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Version
-    private Long version;
+    @OneToMany(mappedBy = "parent", cascade = { REMOVE }, orphanRemoval = true)
+    private List<Child> children = new LinkedList<>();
 
-    @OneToMany(mappedBy = "parent", cascade = { REMOVE }, orphanRemoval = false, fetch = FetchType.LAZY)
-    private List<Child> children = new ArrayList<>();
+    @OneToMany(mappedBy = "parent", cascade = { REMOVE }, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<LazyChild> lazyChildren = new LinkedList<>();
+
+    public Set<String> getEventsListeners() {
+        return eventsListeners;
+    }
+
+    public void setEventsListeners(Set<String> eventsListeners) {
+        this.eventsListeners = eventsListeners;
+    }
 
     @ElementCollection
     @Column(name="LISTENER")
     @CollectionTable(name="REALM_EVENTS_LISTENERS", joinColumns={ @JoinColumn(name="ID") })
-    protected Set<String> eventsListeners;
+    protected Set<String> eventsListeners = new HashSet<>();
 
     public List<Child> getChildren() {
         return children;
@@ -56,25 +65,15 @@ public class Parent {
         this.id = id;
     }
 
-    public void addChild(Child child) {
-        children.add(child);
-        child.setParent(this);
-    }
-
-    public void removeChild(Child child) {
-        children.remove(child);
-        child.setParent(null);
-    }
-
     public int countChildren() {
         return children == null ? 0 : children.size();
     }
 
-    public Long getVersion() {
-        return version;
+    public List<LazyChild> getLazyChildren() {
+        return lazyChildren;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
+    public void setLazyChildren(List<LazyChild> lazyChildren) {
+        this.lazyChildren = lazyChildren;
     }
 }

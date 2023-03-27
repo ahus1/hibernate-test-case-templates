@@ -19,6 +19,7 @@ import jakarta.persistence.LockModeType;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.bugs.cl.Child;
+import org.hibernate.bugs.cl.LazyChild;
 import org.hibernate.bugs.cl.MyOtherEntity;
 import org.hibernate.bugs.cl.Parent;
 import org.hibernate.cfg.AvailableSettings;
@@ -29,6 +30,8 @@ import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.stream.Collectors;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using its built-in unit test framework.
@@ -49,6 +52,7 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 		return new Class[] {
 				Parent.class,
 				Child.class,
+				LazyChild.class,
 				MyOtherEntity.class
 //				Foo.class,
 //				Bar.class
@@ -76,6 +80,7 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 
 		configuration.setProperty( AvailableSettings.SHOW_SQL, Boolean.TRUE.toString() );
 		configuration.setProperty( AvailableSettings.FORMAT_SQL, Boolean.TRUE.toString() );
+		configuration.setProperty( AvailableSettings.ORDER_UPDATES, Boolean.TRUE.toString() );
 		//configuration.setProperty( AvailableSettings.GENERATE_STATISTICS, "true" );
 	}
 
@@ -91,10 +96,20 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 			Transaction tx = s.beginTransaction();
 
 			Parent myParent = new Parent();
-			myParent = s.merge(myParent);
-			Child child = s.merge(new Child());
-			myParent.addChild(child);
+			s.persist(myParent);
+			Child child = new Child();
+			s.persist(child);
+			child.setParent(myParent);
+			myParent.getChildren().add(child);
+
+			LazyChild lazyChild = new LazyChild();
+			s.persist(lazyChild);
+			lazyChild.setParent(myParent);
+			myParent.getLazyChildren().add(lazyChild);
+
 			id = myParent.getId();
+
+			myParent.getEventsListeners().add("mylistener");
 
 			tx.commit();
 			s.close();
@@ -105,24 +120,11 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 			Session s = openSession();
 			Transaction tx = s.beginTransaction();
 
-			Parent myParent = s.find(Parent.class, id);
-
-			myParent.getChildren().size();
-
-			Assert.assertNotNull(((PersistentBag<Child>) myParent.getChildren()).getSession());
-
-			log.info("running select for other entity, causing a auto-flush check, but no flush");
-			s.createQuery("from MyOtherEntity ", MyOtherEntity.class).getResultList();
-
-			Assert.assertNotNull(((PersistentBag<Child>) myParent.getChildren()).getSession());
+			Parent myParent = s.find(Parent.class, id, LockModeType.PESSIMISTIC_WRITE);
 
 			s.refresh(myParent);
 
-			myParent.getChildren().size();
-
-			myParent = s.find(Parent.class, id, LockModeType.WRITE);
-			s.refresh(myParent);
-			myParent.getChildren().size();
+			s.remove(myParent);
 
 			tx.commit();
 			s.close();
