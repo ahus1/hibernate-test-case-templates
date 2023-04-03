@@ -35,41 +35,29 @@ public class JPAUnitTestCase {
 		entityManager.getTransaction().begin();
 
 		RealmEntity realm = new RealmEntity();
-                realm.setId("id");
-                realm.setName("realm");
+		realm.setId("id");
+		realm.setName("realm");
 
-                ComponentEntity c1 = new ComponentEntity();
-                c1.setId("c1");
-                c1.setRealm(realm);
+		ComponentEntity c1 = new ComponentEntity();
+		c1.setId("c1");
+		c1.setRealm(realm);
 
-                ComponentEntity c2 = new ComponentEntity();
-                c2.setId("c2");
-                c2.setRealm(realm);
+		ComponentEntity c2 = new ComponentEntity();
+		c2.setId("c2");
+		c2.setRealm(realm);
 
-                realm.setComponents(Set.of(c1, c2));
-                realm.setEventsListeners(Set.of("l1"));
-//                UserFederationMapperEntity mapper = new UserFederationMapperEntity();
-//                mapper.setId("mapper1");
-//                mapper.setRealm(realm);
-//
-//                realm.setUserFederationMappers(Set.of(mapper));
-//
-//                UserFederationProviderEntity provider = new UserFederationProviderEntity();
-//                provider.setId("provider1");
-//                provider.setRealm(realm);
-//
-//                realm.setUserFederationProviders(List.of(provider));
-                entityManager.persist(realm);
+		realm.setComponents(Set.of(c1, c2));
 
-                entityManager.getTransaction().commit();
-                entityManager.getTransaction().begin();
+		entityManager.persist(realm);
 
-                RealmEntity find = entityManager.find(RealmEntity.class, "id", LockModeType.PESSIMISTIC_WRITE);
-                entityManager.refresh(realm);
+		entityManager.getTransaction().commit();
+		entityManager.getTransaction().begin();
 
-//                s.find(ComponentEntity.class, "c1");
+		RealmEntity find = entityManager.find(RealmEntity.class, "id", LockModeType.PESSIMISTIC_WRITE);
+		entityManager.refresh(realm);
 
-                entityManager.remove(find);
+
+		entityManager.remove(find);
 		entityManager.getTransaction().commit();
 		entityManager.close();
 	}
