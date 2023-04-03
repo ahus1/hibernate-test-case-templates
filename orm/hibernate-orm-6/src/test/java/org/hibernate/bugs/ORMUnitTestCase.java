@@ -82,27 +82,14 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
         // BaseCoreFunctionalTestCase automatically creates the SessionFactory and provides the Session.
         Session s = openSession();
         Transaction tx = s.beginTransaction();
-        // Do stuff...
 
         RealmEntity realm = new RealmEntity();
         realm.setId("id");
         realm.setName("realm");
-
-        RealmAttributeEntity attr = new RealmAttributeEntity();
-        attr.setName("attrName");
-        attr.setRealm(realm);
-
-        realm.setAttributes(Set.of(attr));
-
-        ComponentEntity c1 = new ComponentEntity();
-        c1.setId("c1");
-        c1.setRealm(realm);
-
-        realm.setComponents(Set.of(c1));
         s.persist(realm);
-
         tx.commit();
         s.clear();
+
         tx.begin();
 
         RealmEntity find = s.find(RealmEntity.class, "id");
