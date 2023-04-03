@@ -105,7 +105,7 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
         s.clear();
         tx.begin();
 
-        RealmEntity find = s.find(RealmEntity.class, "id", LockModeType.PESSIMISTIC_WRITE);
+        RealmEntity find = s.find(RealmEntity.class, "id");
         s.refresh(find);
 
         find.getComponents().size();

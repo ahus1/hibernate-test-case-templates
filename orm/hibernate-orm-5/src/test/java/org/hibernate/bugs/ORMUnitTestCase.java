@@ -22,6 +22,11 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using its built-in unit test framework.
  * Although ORMStandaloneTestCase is perfectly acceptable as a reproducer, usage of this class is much preferred.
@@ -37,6 +42,9 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 	@Override
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
+				RealmEntity.class,
+				RealmAttributeEntity.class,
+				ComponentEntity.class,
 //				Foo.class,
 //				Bar.class
 		};
@@ -69,10 +77,38 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 	// Add your tests, using standard JUnit.
 	@Test
 	public void hhh123Test() throws Exception {
-		// BaseCoreFunctionalTestCase automatically creates the SessionFactory and provides the Session.
 		Session s = openSession();
 		Transaction tx = s.beginTransaction();
 		// Do stuff...
+
+		RealmEntity realm = new RealmEntity();
+		realm.setId("id");
+		realm.setName("realm");
+
+		RealmAttributeEntity attr = new RealmAttributeEntity();
+		attr.setName("attrName");
+		attr.setRealm(realm);
+
+		realm.setAttributes(Collections.singletonList(attr));
+
+		ComponentEntity c1 = new ComponentEntity();
+		c1.setId("c1");
+		c1.setRealm(realm);
+
+		realm.setComponents(new HashSet<>(Collections.singletonList(c1)));
+		s.persist(realm);
+
+		tx.commit();
+		s.clear();
+		tx.begin();
+
+		RealmEntity find = s.find(RealmEntity.class, "id");
+		s.refresh(find);
+
+		find.getComponents().size();
+
+		s.remove(find);
+		s.flush();
 		tx.commit();
 		s.close();
 	}
