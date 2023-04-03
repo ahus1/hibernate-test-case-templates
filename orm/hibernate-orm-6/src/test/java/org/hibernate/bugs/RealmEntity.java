@@ -116,12 +116,6 @@ public class RealmEntity {
 //    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
 //    Collection<RequiredCredentialEntity> requiredCredentials = new LinkedList<>();
 
-    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
-    List<UserFederationProviderEntity> userFederationProviders = new LinkedList<>();
-
-    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
-    Collection<UserFederationMapperEntity> userFederationMappers = new LinkedList<>();
-
     @ElementCollection
     @MapKeyColumn(name="NAME")
     @Column(name="VALUE")
@@ -546,28 +540,6 @@ public class RealmEntity {
 
     public void setDefaultRoleId(String defaultRoleId) {
         this.defaultRoleId = defaultRoleId;
-    }
-
-    public List<UserFederationProviderEntity> getUserFederationProviders() {
-        if (userFederationProviders == null) {
-            userFederationProviders = new LinkedList<>();
-        }
-        return userFederationProviders;
-    }
-
-    public void setUserFederationProviders(List<UserFederationProviderEntity> userFederationProviders) {
-        this.userFederationProviders = userFederationProviders;
-    }
-
-    public Collection<UserFederationMapperEntity> getUserFederationMappers() {
-        if (userFederationMappers == null) {
-            userFederationMappers = new LinkedList<>();
-        }
-        return userFederationMappers;
-    }
-
-    public void setUserFederationMappers(Collection<UserFederationMapperEntity> userFederationMappers) {
-        this.userFederationMappers = userFederationMappers;
     }
 
     public Collection<RealmAttributeEntity> getAttributes() {

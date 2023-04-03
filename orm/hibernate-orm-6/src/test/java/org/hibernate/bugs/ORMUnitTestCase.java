@@ -46,9 +46,6 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
                 RealmEntity.class,
                 RealmAttributeEntity.class,
                 ComponentEntity.class,
-                ComponentConfigEntity.class,
-                UserFederationMapperEntity.class,
-                UserFederationProviderEntity.class
 //				Foo.class,
 //				Bar.class
         };
@@ -100,14 +97,6 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
         ComponentEntity c1 = new ComponentEntity();
         c1.setId("c1");
         c1.setRealm(realm);
-
-        ComponentConfigEntity config = new ComponentConfigEntity();
-        config.setId("config1");
-        config.setName("config-name");
-        config.setValue("value");
-        config.setComponent(c1);
-
-        c1.setComponentConfigs(Set.of(config));
 
         ComponentEntity c2 = new ComponentEntity();
         c2.setId("c2");

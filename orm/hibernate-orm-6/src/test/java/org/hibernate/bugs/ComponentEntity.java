@@ -28,9 +28,6 @@ public class ComponentEntity {
     @Column(name="NAME")
     protected String name;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade ={ CascadeType.ALL}, orphanRemoval = true, mappedBy = "component")
-    Set<ComponentConfigEntity> componentConfigs = new HashSet<>();
-
     public String getId() {
         return id;
     }
@@ -53,17 +50,6 @@ public class ComponentEntity {
 
     public void setRealm(RealmEntity realm) {
         this.realm = realm;
-    }
-
-    public Set<ComponentConfigEntity> getComponentConfigs() {
-        if (componentConfigs == null) {
-            componentConfigs = new HashSet<>();
-        }
-        return componentConfigs;
-    }
-
-    public void setComponentConfigs(Set<ComponentConfigEntity> componentConfigs) {
-        this.componentConfigs = componentConfigs;
     }
 
     @Override
