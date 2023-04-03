@@ -15,12 +15,17 @@
  */
 package org.hibernate.bugs;
 
+import jakarta.persistence.LockModeType;
+import java.util.List;
+import java.util.Set;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.testing.bytecode.enhancement.BytecodeEnhancerRunner;
 import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate ORM, using its built-in unit test framework.
@@ -31,12 +36,18 @@ import org.junit.Test;
  * What's even better?  Fork hibernate-orm itself, add your test case directly to a module's unit tests, then
  * submit it as a PR!
  */
+@RunWith(BytecodeEnhancerRunner.class)
 public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 
 	// Add your entities here.
 	@Override
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
+                    RealmEntity.class,
+                    ComponentEntity.class,
+                    ComponentConfigEntity.class,
+                    UserFederationMapperEntity.class,
+                    UserFederationProviderEntity.class
 //				Foo.class,
 //				Bar.class
 		};
@@ -73,6 +84,56 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 		Session s = openSession();
 		Transaction tx = s.beginTransaction();
 		// Do stuff...
+
+                RealmEntity realm = new RealmEntity();
+                realm.setId("id");
+                realm.setName("realm");
+
+                ComponentConfigEntity config = new ComponentConfigEntity();
+                ComponentEntity c1 = new ComponentEntity();
+                c1.setId("c1");
+                c1.setRealm(realm);
+
+                config.setId("config1");
+                config.setName("config-name");
+                config.setValue("value");
+                config.setComponent(c1);
+
+                c1.setComponentConfigs(Set.of(config));
+
+                ComponentEntity c2 = new ComponentEntity();
+                c2.setId("c2");
+                c2.setRealm(realm);
+
+                realm.setComponents(Set.of(c1, c2));
+//                realm.setEventsListeners(Set.of("l1"));
+                realm.setSupportedLocales(Set.of("locale1"));
+//                UserFederationMapperEntity mapper = new UserFederationMapperEntity();
+//                mapper.setId("mapper1");
+//                mapper.setRealm(realm);
+//
+//                realm.setUserFederationMappers(Set.of(mapper));
+//
+//                UserFederationProviderEntity provider = new UserFederationProviderEntity();
+//                provider.setId("provider1");
+//                provider.setRealm(realm);
+//
+//                realm.setUserFederationProviders(List.of(provider));
+                s.persist(realm);
+
+                tx.commit();
+                tx.begin();
+
+                RealmEntity find = s.find(RealmEntity.class, "id", LockModeType.PESSIMISTIC_WRITE);
+                realm.getComponents();
+                s.refresh(realm);
+
+                realm.getSupportedLocales();
+                realm.getUserFederationMappers();
+                realm.getComponents();
+//                s.find(ComponentEntity.class, "c1");
+
+                s.remove(find);
 		tx.commit();
 		s.close();
 	}
