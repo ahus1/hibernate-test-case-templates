@@ -98,11 +98,7 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
         c1.setId("c1");
         c1.setRealm(realm);
 
-        ComponentEntity c2 = new ComponentEntity();
-        c2.setId("c2");
-        c2.setRealm(realm);
-
-        realm.setComponents(Set.of(c1, c2));
+        realm.setComponents(Set.of(c1));
         s.persist(realm);
 
         tx.commit();
