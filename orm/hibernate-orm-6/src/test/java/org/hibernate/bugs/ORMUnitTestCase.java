@@ -22,6 +22,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.testing.bytecode.enhancement.BytecodeEnhancerRunner;
 import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
 import org.junit.Test;
@@ -44,6 +45,7 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
                     RealmEntity.class,
+                    RealmAttributeEntity.class,
                     ComponentEntity.class,
                     ComponentConfigEntity.class,
                     UserFederationMapperEntity.class,
@@ -89,6 +91,12 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
                 realm.setId("id");
                 realm.setName("realm");
 
+                RealmAttributeEntity attr = new RealmAttributeEntity();
+                attr.setName("attrName");
+                attr.setRealm(realm);
+
+                realm.setAttributes(Set.of(attr));
+
                 ComponentConfigEntity config = new ComponentConfigEntity();
                 ComponentEntity c1 = new ComponentEntity();
                 c1.setId("c1");
@@ -122,18 +130,27 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
                 s.persist(realm);
 
                 tx.commit();
+                s.clear();
                 tx.begin();
 
                 RealmEntity find = s.find(RealmEntity.class, "id", LockModeType.PESSIMISTIC_WRITE);
-                realm.getComponents();
+                Set<ComponentEntity> components = realm.getComponents();
+                for (ComponentEntity component : components) {
+                    component.getComponentConfigs();
+                }
                 s.refresh(realm);
 
-                realm.getSupportedLocales();
-                realm.getUserFederationMappers();
-                realm.getComponents();
+                SharedSessionContractImplementor session1 = ((org.hibernate.collection.spi.AbstractPersistentCollection) realm.components).getSession();
+//                realm.getSupportedLocales();
+//                realm.getUserFederationMappers();
+//                for (ComponentEntity component : realm.getComponents()) {
+//                    component.getComponentConfigs();
+//                }
+                
 //                s.find(ComponentEntity.class, "c1");
 
                 s.remove(find);
+                s.flush();
 		tx.commit();
 		s.close();
 	}

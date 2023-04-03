@@ -110,8 +110,8 @@ public class RealmEntity {
     @Column(name="EMAIL_THEME")
     protected String emailTheme;
 
-//    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm", fetch = FetchType.EAGER)
-//    Collection<RealmAttributeEntity> attributes = new LinkedList<>();
+    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm", fetch = FetchType.EAGER)
+    Collection<RealmAttributeEntity> attributes = new LinkedList<>();
 //
 //    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
 //    Collection<RequiredCredentialEntity> requiredCredentials = new LinkedList<>();
@@ -578,16 +578,16 @@ public class RealmEntity {
         this.userFederationMappers = userFederationMappers;
     }
 
-//    public Collection<RealmAttributeEntity> getAttributes() {
-//        if (attributes == null) {
-//            attributes = new LinkedList<>();
-//        }
-//        return attributes;
-//    }
-//
-//    public void setAttributes(Collection<RealmAttributeEntity> attributes) {
-//        this.attributes = attributes;
-//    }
+    public Collection<RealmAttributeEntity> getAttributes() {
+        if (attributes == null) {
+            attributes = new LinkedList<>();
+        }
+        return attributes;
+    }
+
+    public void setAttributes(Collection<RealmAttributeEntity> attributes) {
+        this.attributes = attributes;
+    }
 //
 //    public List<IdentityProviderEntity> getIdentityProviders() {
 //        if (identityProviders == null) {
