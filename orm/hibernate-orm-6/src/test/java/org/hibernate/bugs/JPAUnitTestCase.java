@@ -53,9 +53,8 @@ public class JPAUnitTestCase {
 		entityManager.getTransaction().commit();
 		entityManager.getTransaction().begin();
 
-		RealmEntity find = entityManager.find(RealmEntity.class, "id", LockModeType.PESSIMISTIC_WRITE);
+		RealmEntity find = entityManager.find(RealmEntity.class, "id");
 		entityManager.refresh(realm);
-
 
 		entityManager.remove(find);
 		entityManager.getTransaction().commit();
