@@ -84,18 +84,6 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
 		RealmEntity realm = new RealmEntity();
 		realm.setId("id");
 		realm.setName("realm");
-
-		RealmAttributeEntity attr = new RealmAttributeEntity();
-		attr.setName("attrName");
-		attr.setRealm(realm);
-
-		realm.setAttributes(Collections.singletonList(attr));
-
-		ComponentEntity c1 = new ComponentEntity();
-		c1.setId("c1");
-		c1.setRealm(realm);
-
-		realm.setComponents(new HashSet<>(Collections.singletonList(c1)));
 		s.persist(realm);
 
 		tx.commit();
