@@ -114,7 +114,6 @@ public class ORMUnitTestCase extends BaseCoreFunctionalTestCase {
         c2.setRealm(realm);
 
         realm.setComponents(Set.of(c1, c2));
-        realm.setSupportedLocales(Set.of("locale1"));
         s.persist(realm);
 
         tx.commit();

@@ -200,14 +200,6 @@ public class RealmEntity {
     @Column(name="INTERNATIONALIZATION_ENABLED")
     protected boolean internationalizationEnabled;
 
-    @ElementCollection
-    @Column(name="VALUE")
-    @CollectionTable(name="REALM_SUPPORTED_LOCALES", joinColumns={ @JoinColumn(name="REALM_ID") })
-    protected Set<String> supportedLocales;
-
-    @Column(name="DEFAULT_LOCALE")
-    protected String defaultLocale;
-
     @Column(name="ALLOW_USER_MANAGED_ACCESS")
     private boolean allowUserManagedAccess;
 
@@ -588,22 +580,6 @@ public class RealmEntity {
     public void setAttributes(Collection<RealmAttributeEntity> attributes) {
         this.attributes = attributes;
     }
-//
-//    public List<IdentityProviderEntity> getIdentityProviders() {
-//        if (identityProviders == null) {
-//            identityProviders = new LinkedList<>();
-//        }
-//        return this.identityProviders;
-//    }
-//
-//    public void setIdentityProviders(List<IdentityProviderEntity> identityProviders) {
-//        this.identityProviders = identityProviders;
-//    }
-//
-//    public void addIdentityProvider(IdentityProviderEntity entity) {
-//        entity.setRealm(this);
-//        getIdentityProviders().add(entity);
-//    }
 
     public boolean isInternationalizationEnabled() {
         return internationalizationEnabled;
@@ -612,69 +588,6 @@ public class RealmEntity {
     public void setInternationalizationEnabled(boolean internationalizationEnabled) {
         this.internationalizationEnabled = internationalizationEnabled;
     }
-
-    public Set<String> getSupportedLocales() {
-        if (supportedLocales == null) {
-            supportedLocales = new HashSet<>();
-        }
-        return supportedLocales;
-    }
-
-    public void setSupportedLocales(Set<String> supportedLocales) {
-        this.supportedLocales = supportedLocales;
-    }
-
-    public String getDefaultLocale() {
-        return defaultLocale;
-    }
-
-    public void setDefaultLocale(String defaultLocale) {
-        this.defaultLocale = defaultLocale;
-    }
-
-//    public Collection<IdentityProviderMapperEntity> getIdentityProviderMappers() {
-//        if (identityProviderMappers == null) {
-//            identityProviderMappers = new LinkedList<>();
-//        }
-//        return identityProviderMappers;
-//    }
-//
-//    public void setIdentityProviderMappers(Collection<IdentityProviderMapperEntity> identityProviderMappers) {
-//        this.identityProviderMappers = identityProviderMappers;
-//    }
-//
-//    public Collection<AuthenticatorConfigEntity> getAuthenticatorConfigs() {
-//        if (authenticators == null) {
-//            authenticators = new LinkedList<>();
-//        }
-//        return authenticators;
-//    }
-//    
-//    public void setAuthenticatorConfigs(Collection<AuthenticatorConfigEntity> authenticators) {
-//        this.authenticators = authenticators;
-//    }
-//
-//    public Collection<RequiredActionProviderEntity> getRequiredActionProviders() {
-//        if (requiredActionProviders == null) {
-//            requiredActionProviders = new LinkedList<>();
-//        }
-//        return requiredActionProviders;
-//    }
-//
-//    public void setRequiredActionProviders(Collection<RequiredActionProviderEntity> requiredActionProviders) {
-//        this.requiredActionProviders = requiredActionProviders;
-//    }
-//
-//    public Collection<AuthenticationFlowEntity> getAuthenticationFlows() {
-//        if (authenticationFlows == null) {
-//            authenticationFlows = new LinkedList<>();
-//        }
-//        return authenticationFlows;
-//    }
-//
-//    public void setAuthenticationFlows(Collection<AuthenticationFlowEntity> authenticationFlows) {
-//        this.authenticationFlows = authenticationFlows;
-//    }
 
     public Set<ComponentEntity> getComponents() {
         if (components == null) {
