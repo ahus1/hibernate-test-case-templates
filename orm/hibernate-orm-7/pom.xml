@@ -12,6 +12,7 @@
 		<version.junit-jupiter>6.0.3</version.junit-jupiter>
 		<version.org.hibernate.orm>7.4.13.Final</version.org.hibernate.orm>
 		<version.org.assertj.assertj-core>3.27.7</version.org.assertj.assertj-core>
+		<version.testcontainers>2.0.3</version.testcontainers>
 	</properties>
 
 	<dependencyManagement>
@@ -50,6 +51,18 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>${version.com.h2database}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers-mysql</artifactId>
+			<version>${version.testcontainers}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<version>9.5.0</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
